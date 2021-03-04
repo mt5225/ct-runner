@@ -15,7 +15,7 @@ func main() {
 	Router = gin.Default()
 	api := Router.Group("/api")
 	{
-		api.GET("/run", func(ctx *gin.Context) {
+		api.POST("/run", func(ctx *gin.Context) {
 			cmd := new(container.Command)
 			cmd.Image = TerraformImage
 			cmd.Env = make([]string, 0)
