@@ -9,7 +9,7 @@ var (
 	Router *gin.Engine
 )
 
-const TerraformImage string = "radut/terraform-ansible:latest"
+const terraformImage = "radut/terraform-ansible:latest"
 
 func main() {
 	Router = gin.Default()
@@ -17,7 +17,7 @@ func main() {
 	{
 		api.POST("/run", func(ctx *gin.Context) {
 			cmd := new(container.Command)
-			cmd.Image = TerraformImage
+			cmd.Image = terraformImage
 			cmd.Env = make([]string, 0)
 			cmd.Commands = []string{"sh", "-c", `terraform version`}
 			cID, err := cmd.Run()
