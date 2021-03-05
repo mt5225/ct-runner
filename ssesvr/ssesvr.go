@@ -1,4 +1,4 @@
-package sse
+package ssesvr
 
 import (
 	"bufio"

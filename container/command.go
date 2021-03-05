@@ -9,7 +9,7 @@ import (
 	"github.com/docker/docker/client"
 	"github.com/gin-gonic/gin"
 	guuid "github.com/google/uuid"
-	sse "github.com/mt5225/ct-runner/sse"
+	ssesvr "github.com/mt5225/ct-runner/ssesvr"
 )
 
 //Command to run docker image
@@ -80,7 +80,7 @@ func (cmd *Command) Run(r *gin.Engine) (string, error) {
 	resultStream, err := inspectExecResp(ctx, resp.ID)
 
 	//output the web page
-	sse.SseServer(r, resultStream)
+	ssesvr.SseServer(r, resultStream)
 
 	defer cli.ContainerKill(ctx, cont.ID, "SIGKILL")
 
