@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"io"
 	"log"
+	"os"
 	"strconv"
 	"sync"
 	"time"
@@ -52,7 +53,14 @@ func (resp *RespStream) SseServer(r *gin.Engine) {
 		/*
 		   send log lines to channel
 		*/
-		rd := bufio.NewReader(resp.Stream.Reader)
+		var stream *bufio.Reader
+		if resp == nil {
+			stream = bufio.NewReader(os.Stderr)
+		} else {
+			stream = resp.Stream.Reader
+		}
+
+		rd := bufio.NewReader(stream)
 		var mu sync.RWMutex
 		go func() {
 			for {
