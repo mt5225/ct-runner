@@ -1,15 +1,13 @@
 package container
 
 import (
-	"bytes"
 	"context"
 	"fmt"
-	"io/ioutil"
 
 	"github.com/docker/docker/api/types"
 	"github.com/docker/docker/api/types/container"
 	"github.com/docker/docker/client"
-	"github.com/docker/docker/pkg/stdcopy"
+	"github.com/gin-gonic/gin"
 	guuid "github.com/google/uuid"
 )
 
@@ -28,7 +26,7 @@ type Command struct {
 var keepAliveCMD = []string{"sleep", "infinity"}
 
 // Run container
-func (cmd *Command) Run() (string, error) {
+func (cmd *Command) Run(r *gin.Engine) (string, error) {
 	cli, err := client.NewEnvClient()
 
 	if err != nil {
@@ -78,67 +76,31 @@ func (cmd *Command) Run() (string, error) {
 		panic(err)
 	}
 
-	result, err := inspectExecResp(ctx, resp.ID)
+	resultStream, err := inspectExecResp(ctx, resp.ID)
+
+	//output the web page
+	ses.SseServer(r, resultStream)
 
 	defer cli.ContainerKill(ctx, cont.ID, "SIGKILL")
 
-	return fmt.Sprint(result), err
+	return fmt.Sprint(cont.ID), err
 }
 
 // TODO streaming to websocket
-func inspectExecResp(ctx context.Context, id string) (execResult, error) {
-	var execResult execResult
+func inspectExecResp(ctx context.Context, id string) (*types.HijackedResponse, error) {
 	docker, err := client.NewEnvClient()
 	if err != nil {
-		return execResult, err
+		return nil, err
 	}
 	defer docker.Close()
 
 	resp, err := docker.ContainerExecAttach(ctx, id, types.ExecStartCheck{})
 	if err != nil {
-		return execResult, err
+		return nil, err
 	}
 	defer resp.Close()
 
-	// read the output
-	var outBuf, errBuf bytes.Buffer
-	outputDone := make(chan error)
-
-	go func() {
-		// StdCopy demultiplexes the stream into two buffers
-		_, err = stdcopy.StdCopy(&outBuf, &errBuf, resp.Reader)
-		outputDone <- err
-	}()
-
-	select {
-	case err := <-outputDone:
-		if err != nil {
-			return execResult, err
-		}
-		break
-
-	case <-ctx.Done():
-		return execResult, ctx.Err()
-	}
-
-	stdout, err := ioutil.ReadAll(&outBuf)
-	if err != nil {
-		return execResult, err
-	}
-	stderr, err := ioutil.ReadAll(&errBuf)
-	if err != nil {
-		return execResult, err
-	}
-
-	res, err := docker.ContainerExecInspect(ctx, id)
-	if err != nil {
-		return execResult, err
-	}
-
-	execResult.ExitCode = res.ExitCode
-	execResult.StdOut = string(stdout)
-	execResult.StdErr = string(stderr)
-	return execResult, nil
+	return &resp, nil
 }
 
 type execResult struct {

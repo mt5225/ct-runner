@@ -1,25 +1,23 @@
 package main
 
 import (
-	"github.com/ct-runner/v0.0.1/container"
+	"github.com/ct-runner/container"
 	"github.com/gin-gonic/gin"
-)
-
-var (
-	Router *gin.Engine
 )
 
 const terraformImage = "radut/terraform-ansible:latest"
 
 func main() {
-	Router = gin.Default()
-	api := Router.Group("/api")
+	r := gin.Default()
+	r.Static("/js", "./templates/js")
+	r.LoadHTMLGlob("./templates/*.html")
+	api := r.Group("/api")
 	{
 		api.GET("/run", func(ctx *gin.Context) {
 			cmd := new(container.Command)
 			cmd.Image = terraformImage
 			cmd.Env = make([]string, 0)
-			cmd.Commands = []string{"sh", "-c", `terraform version`}
+			cmd.Commands = []string{"sh", "-c", `for i in {1..10}; do sleep 1&&echo $i; done`}
 			cID, err := cmd.Run()
 			if err != nil {
 				ctx.JSON(200, gin.H{
@@ -33,5 +31,7 @@ func main() {
 
 		})
 	}
-	Router.Run(":5000")
+
+	ses.WebClient(r)
+	r.Run(":5000")
 }
