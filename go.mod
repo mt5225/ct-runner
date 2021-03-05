@@ -1,4 +1,4 @@
-module github.com/ct-runner/v0.0.1
+module github.com/ct-runner
 
 go 1.16
 
@@ -9,6 +9,7 @@ require (
 	github.com/docker/docker v20.10.5+incompatible
 	github.com/docker/go-connections v0.4.0 // indirect
 	github.com/docker/go-units v0.4.0 // indirect
+	github.com/gin-contrib/sse v0.1.0
 	github.com/gin-gonic/gin v1.6.3
 	github.com/gogo/protobuf v1.3.2 // indirect
 	github.com/google/uuid v1.1.2
