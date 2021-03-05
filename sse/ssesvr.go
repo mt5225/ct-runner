@@ -15,11 +15,6 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-func WebClient(r *gin.Engine) {
-	r.GET("/logs/:container_id", func(c *gin.Context) {
-		c.HTML(200, "index.html", gin.H{})
-	})
-}
 func SseServer(r *gin.Engine, resp *types.HijackedResponse) {
 	r.GET("/stream/:container_id", func(c *gin.Context) {
 		/*

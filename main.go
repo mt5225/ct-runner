@@ -9,8 +9,8 @@ const terraformImage = "radut/terraform-ansible:latest"
 
 func main() {
 	r := gin.Default()
-	r.Static("/js", "./templates/js")
-	r.LoadHTMLGlob("./templates/*.html")
+	webClient(r)
+
 	api := r.Group("/api")
 	{
 		api.GET("/run", func(ctx *gin.Context) {
@@ -31,7 +31,13 @@ func main() {
 
 		})
 	}
-
-	ses.WebClient(r)
 	r.Run(":5000")
+}
+
+func webClient(r *gin.Engine) {
+	r.Static("/js", "./templates/js")
+	r.LoadHTMLGlob("./templates/*.html")
+	r.GET("/logs/:container_id", func(c *gin.Context) {
+		c.HTML(200, "index.html", gin.H{})
+	})
 }
