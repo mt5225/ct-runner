@@ -20,8 +20,8 @@ func main() {
 			cmd := new(container.Command)
 			cmd.Image = terraformImage
 			cmd.Env = make([]string, 0)
-			cmd.Commands = []string{"sh", "-c", `sleep 100`}
-			cID, err := cmd.Run()
+			cmd.Commands = []string{"sh", "-c", `watch -n 3 uptime`}
+			cID, err := cmd.Run(stream)
 			if err != nil {
 				ctx.JSON(200, gin.H{
 					"message": "fail to run container",

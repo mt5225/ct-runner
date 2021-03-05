@@ -11,6 +11,7 @@ import (
 	"github.com/docker/docker/client"
 	"github.com/docker/docker/pkg/stdcopy"
 	guuid "github.com/google/uuid"
+	"github.com/mt5225/ct-runner/ssesvr"
 )
 
 //Command to run docker image
@@ -28,7 +29,7 @@ type Command struct {
 var keepAliveCMD = []string{"sleep", "infinity"}
 
 // Run container
-func (cmd *Command) Run() (string, error) {
+func (cmd *Command) Run(stream *ssesvr.RespStream) (string, error) {
 	cli, err := client.NewEnvClient()
 
 	if err != nil {
@@ -78,14 +79,26 @@ func (cmd *Command) Run() (string, error) {
 		panic(err)
 	}
 
-	result, err := inspectExecResp(ctx, resp.ID)
+	// result, err := inspectExecResp(ctx, resp.ID)
+	// defer cli.ContainerKill(ctx, cont.ID, "SIGKILL")
 
-	defer cli.ContainerKill(ctx, cont.ID, "SIGKILL")
-
+	streamingExecResp(ctx, resp.ID, stream)
+	result := cont.ID
 	return fmt.Sprint(result), err
 }
 
-// TODO streaming to websocket
+func streamingExecResp(ctx context.Context, id string, stream *ssesvr.RespStream) error {
+	docker, err := client.NewEnvClient()
+	if err != nil {
+		return err
+	}
+	defer docker.Close()
+
+	resp, err := docker.ContainerExecAttach(ctx, id, types.ExecStartCheck{})
+	stream.Stream = &resp
+	return nil
+}
+
 func inspectExecResp(ctx context.Context, id string) (execResult, error) {
 	var execResult execResult
 	docker, err := client.NewEnvClient()
