@@ -27,9 +27,8 @@ type Command struct {
 var keepAliveCMD = []string{"sleep", "infinity"}
 
 // Run container
-func (cmd *Command) Run(r *gin.Engine) (string, error) {
+func (cmd *Command) Run(r *gin.Engine, s *ssesvr.RespStream) (string, error) {
 	cli, err := client.NewEnvClient()
-
 	if err != nil {
 		fmt.Println("Unable to create docker client")
 		panic(err)
@@ -77,10 +76,10 @@ func (cmd *Command) Run(r *gin.Engine) (string, error) {
 		panic(err)
 	}
 
-	resultStream, err := inspectExecResp(ctx, resp.ID)
+	streamResp, err := inspectExecResp(ctx, resp.ID)
 
 	//output the web page
-	ssesvr.SseServer(r, resultStream)
+	s.Stream = streamResp
 
 	defer cli.ContainerKill(ctx, cont.ID, "SIGKILL")
 

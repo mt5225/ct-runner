@@ -1,4 +1,4 @@
-module github.com/ct-runner
+module github.com/mt5225/ct-runner
 
 go 1.16
 

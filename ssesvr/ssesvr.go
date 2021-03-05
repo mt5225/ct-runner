@@ -15,8 +15,12 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-func SseServer(r *gin.Engine, resp *types.HijackedResponse) {
-	r.GET("/stream/:container_id", func(c *gin.Context) {
+type RespStream struct {
+	Stream *types.HijackedResponse
+}
+
+func (resp *RespStream) SseServer(r *gin.Engine) {
+	r.GET("/stream", func(c *gin.Context) {
 		/*
 		   we don't want the stream lasts forever, set the timeout
 		*/
@@ -48,7 +52,7 @@ func SseServer(r *gin.Engine, resp *types.HijackedResponse) {
 		/*
 		   send log lines to channel
 		*/
-		rd := bufio.NewReader(resp.Reader)
+		rd := bufio.NewReader(resp.Stream.Reader)
 		var mu sync.RWMutex
 		go func() {
 			for {
