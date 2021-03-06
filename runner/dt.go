@@ -14,6 +14,7 @@ type Command struct {
 	Workdir  string
 	Stash    map[string]string
 	UnStash  map[string]string
+	Timeout  int
 
 	// for container
 	ContainerInstance *Container

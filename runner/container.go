@@ -6,6 +6,7 @@ import (
 
 	"github.com/docker/docker/api/types"
 	"github.com/docker/docker/api/types/container"
+	"github.com/docker/docker/api/types/mount"
 	"github.com/docker/docker/client"
 	"github.com/gin-gonic/gin"
 	guuid "github.com/google/uuid"
@@ -33,6 +34,13 @@ func (cmd *Command) Create() error {
 		},
 		&container.HostConfig{
 			AutoRemove: true,
+			Mounts: []mount.Mount{
+				{
+					Type:   mount.TypeBind,
+					Source: AssetPath,
+					Target: "/assets",
+				},
+			},
 		},
 		nil,
 		nil,

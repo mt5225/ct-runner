@@ -39,7 +39,7 @@ func (c *Command) Streaming(r *gin.Engine) {
 		/*
 		   we don't want the stream lasts forever, set the timeout
 		*/
-		ctx, cancel := context.WithTimeout(context.Background(), 60*time.Second)
+		ctx, cancel := context.WithTimeout(context.Background(), time.Duration(c.Timeout)*time.Second)
 		defer cancel()
 		chanStream := make(chan string) // to consume lines read from docker
 		done := make(chan bool)         // to indicate when the work is done
