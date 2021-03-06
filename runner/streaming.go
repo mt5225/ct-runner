@@ -1,4 +1,4 @@
-package ssesvr
+package runner
 
 import (
 	"bufio"
@@ -6,22 +6,30 @@ import (
 	"fmt"
 	"io"
 	"log"
-	"os"
 	"strconv"
 	"sync"
 	"time"
 
 	"github.com/docker/docker/api/types"
+	"github.com/docker/docker/client"
 	"github.com/gin-contrib/sse"
 	"github.com/gin-gonic/gin"
 )
 
-type RespStream struct {
-	Stream *types.HijackedResponse
-}
+// Streaming conttainer output
+func (c *Command) Streaming(r *gin.Engine) {
+	r.GET("/stream/"+c.ContainerInstance.ID, func(r *gin.Context) {
+		/*
+		  inspect output in container
+		*/
+		docker, err := client.NewEnvClient()
 
-func (resp *RespStream) SseServer(r *gin.Engine) {
-	r.GET("/stream", func(c *gin.Context) {
+		if err != nil {
+			panic(err)
+		}
+
+		resp, err := docker.ContainerExecAttach(c.ContainerInstance.Context, c.ContainerInstance.ID, types.ExecStartCheck{})
+
 		/*
 		   we don't want the stream lasts forever, set the timeout
 		*/
@@ -35,7 +43,7 @@ func (resp *RespStream) SseServer(r *gin.Engine) {
 		go func() {
 			for {
 				select {
-				case <-c.Request.Context().Done():
+				case <-r.Request.Context().Done():
 					// client gave up
 					done <- true
 					return
@@ -50,17 +58,11 @@ func (resp *RespStream) SseServer(r *gin.Engine) {
 				}
 			}
 		}()
+
 		/*
 		   send log lines to channel
 		*/
-		var stream *bufio.Reader
-		if resp == nil {
-			stream = bufio.NewReader(os.Stderr)
-		} else {
-			stream = resp.Stream.Reader
-		}
-
-		rd := bufio.NewReader(stream)
+		rd := bufio.NewReader(resp.Reader)
 		var mu sync.RWMutex
 		go func() {
 			for {
@@ -78,16 +80,16 @@ func (resp *RespStream) SseServer(r *gin.Engine) {
 			}
 		}()
 		count := 0 // to indicate the message id
-		isStreaming := c.Stream(func(w io.Writer) bool {
+		isStreaming := r.Stream(func(w io.Writer) bool {
 			for {
 				select {
 				case <-done:
 					// when deadline is reached, send 'end' event
-					c.SSEvent("end", "end")
+					r.SSEvent("end", "end")
 					return false
 				case msg := <-chanStream:
 					// send events to client
-					c.Render(-1, sse.Event{
+					r.Render(-1, sse.Event{
 						Id:    strconv.Itoa(count),
 						Event: "message",
 						Data:  msg,
