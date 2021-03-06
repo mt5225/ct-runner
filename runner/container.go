@@ -2,7 +2,7 @@ package runner
 
 import (
 	"context"
-	"fmt"
+	"log"
 
 	"github.com/docker/docker/api/types"
 	"github.com/docker/docker/api/types/container"
@@ -18,7 +18,7 @@ func (cmd *Command) Create() error {
 	cli, err := client.NewEnvClient()
 
 	if err != nil {
-		fmt.Println("Unable to create docker client")
+		log.Printf("Unable to create docker client")
 		panic(err)
 	}
 
@@ -39,7 +39,7 @@ func (cmd *Command) Create() error {
 		id.String())
 
 	cmd.ContainerInstance.ID = cont.ID
-	fmt.Println("Create container ID = ", cont.ID)
+	log.Printf("Create container ID = %s", cont.ID)
 	return err
 }
 
@@ -68,4 +68,18 @@ func (cmd *Command) Run(r *gin.Engine) error {
 
 	cmd.ContainerInstance.RunID = resp.ID
 	return err
+}
+
+// stopAndRemoveContainer Stop and remove a container
+func (cmd *Command) stopAndRemoveContainer(client *client.Client) error {
+	removeOptions := types.ContainerRemoveOptions{
+		RemoveVolumes: true,
+		Force:         true,
+	}
+
+	if err := client.ContainerRemove(cmd.ContainerInstance.Context, cmd.ContainerInstance.ID, removeOptions); err != nil {
+		log.Printf("Unable to remove container: %s", err)
+		return err
+	}
+	return nil
 }

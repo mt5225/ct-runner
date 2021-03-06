@@ -152,16 +152,16 @@
     integrity="sha256-CSXorXvZcTkaix6Yvo6HppcZGetbYMGWSFlBw8HfCJo=" crossorigin="anonymous"></script>
 <script type="application/javascript">
     $(document).ready(function () {
-        var url = "../stream";
+        var url = "../stream/" + {{.ContainerID }}
         var stream = new EventSource(url);
-        stream.addEventListener("end", function (e) {
-            console.log("end")
-            stream.close();
-        })
-        stream.addEventListener("message", function (e) {
-            console.log(e.data);
-            $(document).find('.log').append('<span class="message">$ ' + e.data + '</span><br/>')
-        });
+    stream.addEventListener("end", function (e) {
+        console.log("end")
+        stream.close();
+    })
+    stream.addEventListener("message", function (e) {
+        console.log(e.data);
+        $(document).find('.log').append('<span class="message">$ ' + e.data + '</span><br/>')
+    });
     });
 </script>
 

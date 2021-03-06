@@ -7,7 +7,7 @@ import (
 )
 
 // docker image to run terraform
-const terraformImage = "radut/terraform-ansible:latest"
+const terraformImage = "mt5225/tf-ansible:v0.0.1"
 
 // ContainerRunner the container runner
 func ContainerRunner(r *gin.Engine) {
@@ -17,7 +17,7 @@ func ContainerRunner(r *gin.Engine) {
 			c := new(Command)
 			c.Image = terraformImage
 			c.Env = make([]string, 0)
-			c.Commands = []string{"sh", "-c", `sleep 60&&uptime`}
+			c.Commands = []string{"sh", "-c", `sleep 10&&uptime`}
 			c.ContainerInstance = new(Container)
 			c.ContainerInstance.Context = context.Background()
 

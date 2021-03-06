@@ -3,7 +3,6 @@ package runner
 import (
 	"bufio"
 	"context"
-	"fmt"
 	"io"
 	"log"
 	"strconv"
@@ -28,7 +27,14 @@ func (c *Command) Streaming(r *gin.Engine) {
 			panic(err)
 		}
 
-		resp, err := docker.ContainerExecAttach(c.ContainerInstance.Context, c.ContainerInstance.ID, types.ExecStartCheck{})
+		resp, err := docker.ContainerExecAttach(
+			c.ContainerInstance.Context,
+			c.ContainerInstance.RunID,
+			types.ExecStartCheck{})
+
+		if err != nil {
+			panic(err)
+		}
 
 		/*
 		   we don't want the stream lasts forever, set the timeout
@@ -51,7 +57,7 @@ func (c *Command) Streaming(r *gin.Engine) {
 					// timeout
 					switch ctx.Err() {
 					case context.DeadlineExceeded:
-						fmt.Println("timeout")
+						log.Printf("timeout")
 					}
 					done <- true
 					return
@@ -100,7 +106,8 @@ func (c *Command) Streaming(r *gin.Engine) {
 			}
 		})
 		if !isStreaming {
-			fmt.Println("stream closed")
+			log.Printf("stream closed, kill container %s", c.ContainerInstance.ID)
+			c.stopAndRemoveContainer(docker)
 		}
 	})
 }
