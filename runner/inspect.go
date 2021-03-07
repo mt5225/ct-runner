@@ -11,7 +11,7 @@ import (
 )
 
 // get result after command is finish
-func inspectExecResp(ctx context.Context, id string) (execResult, error) {
+func inspectExecResp(ctx context.Context, runID string) (execResult, error) {
 	var execResult execResult
 	docker, err := client.NewEnvClient()
 	if err != nil {
@@ -19,7 +19,7 @@ func inspectExecResp(ctx context.Context, id string) (execResult, error) {
 	}
 	defer docker.Close()
 
-	resp, err := docker.ContainerExecAttach(ctx, id, types.ExecStartCheck{})
+	resp, err := docker.ContainerExecAttach(ctx, runID, types.ExecStartCheck{})
 	if err != nil {
 		return execResult, err
 	}
@@ -55,7 +55,7 @@ func inspectExecResp(ctx context.Context, id string) (execResult, error) {
 		return execResult, err
 	}
 
-	res, err := docker.ContainerExecInspect(ctx, id)
+	res, err := docker.ContainerExecInspect(ctx, runID)
 	if err != nil {
 		return execResult, err
 	}
