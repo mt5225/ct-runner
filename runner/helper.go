@@ -52,6 +52,12 @@ func ReqToCommand(req *http.Request) (*Command, error) {
 	if d.Mode == "apply" {
 		log.Println("entering apply mode ...")
 		cmdlist = append(cmdlist, fmt.Sprintf("%s %s&&%s", "terraform apply -auto-approve -var-file", d.Varfile, d.Extra))
+	} else if d.Mode == "destroy" {
+		log.Println("entering destroy mode ...")
+		cmdlist = append(cmdlist, fmt.Sprintf("%s %s&&%s", "terraform destroy -auto-approve -var-file", d.Varfile, d.Extra))
+	} else if d.Mode == "pull" {
+		log.Println("show state info ...")
+		cmdlist = append(cmdlist, fmt.Sprintf("%s&&%s", "terraform state pull", d.Extra))
 	} else {
 		cmdlist = append(cmdlist, fmt.Sprintf("%s %s&&%s", "terraform plan -var-file", d.Varfile, d.Extra))
 	}
